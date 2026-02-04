@@ -1,0 +1,128 @@
+CREATE DATABASE IF NOT EXISTS store_db DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE store_db;
+
+DROP TABLE IF EXISTS sys_role;
+CREATE TABLE sys_role (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  role_name VARCHAR(50) NOT NULL,
+  role_code VARCHAR(50) NOT NULL UNIQUE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS sys_user;
+CREATE TABLE sys_user (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  name VARCHAR(50) NOT NULL,
+  phone VARCHAR(20) NULL,
+  role_id BIGINT NOT NULL,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_role_id (role_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS sys_role_permission;
+CREATE TABLE sys_role_permission (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  role_id BIGINT NOT NULL,
+  permission_code VARCHAR(50) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_role_id (role_id),
+  INDEX idx_permission_code (permission_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS product;
+CREATE TABLE product (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  barcode VARCHAR(64) NOT NULL UNIQUE,
+  name VARCHAR(100) NOT NULL,
+  category VARCHAR(50) NOT NULL,
+  cost_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  sale_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  stock INT NOT NULL DEFAULT 0,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS stock_in_record;
+CREATE TABLE stock_in_record (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  in_no VARCHAR(32) NOT NULL UNIQUE,
+  operator_id BIGINT NOT NULL,
+  total_cost DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_operator_id (operator_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS stock_in_item;
+CREATE TABLE stock_in_item (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  record_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  barcode VARCHAR(64) NOT NULL,
+  qty INT NOT NULL,
+  cost_price DECIMAL(10,2) NOT NULL,
+  sale_price DECIMAL(10,2) NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  PRIMARY KEY (id),
+  INDEX idx_record_id (record_id),
+  INDEX idx_product_id (product_id),
+  INDEX idx_barcode (barcode)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS stock_out_record;
+CREATE TABLE stock_out_record (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  out_no VARCHAR(32) NOT NULL UNIQUE,
+  operator_id BIGINT NOT NULL,
+  total_amount DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  total_profit DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_operator_id (operator_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS stock_out_item;
+CREATE TABLE stock_out_item (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  record_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  barcode VARCHAR(64) NOT NULL,
+  product_name VARCHAR(100) NOT NULL,
+  qty INT NOT NULL,
+  cost_price DECIMAL(10,2) NOT NULL,
+  sale_price DECIMAL(10,2) NOT NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  profit DECIMAL(12,2) NOT NULL,
+  PRIMARY KEY (id),
+  INDEX idx_record_id (record_id),
+  INDEX idx_product_id (product_id),
+  INDEX idx_barcode (barcode)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DROP TABLE IF EXISTS stock_adjust_record;
+CREATE TABLE stock_adjust_record (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  adj_no VARCHAR(32) NOT NULL UNIQUE,
+  operator_id BIGINT NOT NULL,
+  product_id BIGINT NOT NULL,
+  barcode VARCHAR(64) NOT NULL,
+  before_stock INT NOT NULL,
+  change_stock INT NOT NULL,
+  after_stock INT NOT NULL,
+  reason VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_operator_id (operator_id),
+  INDEX idx_product_id (product_id),
+  INDEX idx_barcode (barcode)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
